@@ -38,6 +38,8 @@ void _initMotionManager() {
   if (!_motionManager) {
     _motionManager = [[CMMotionManager alloc] init];
     _motionManager.accelerometerUpdateInterval = 0.2;
+    _motionManager.gyroUpdateInterval = 0.2;
+    _motionManager.deviceMotionUpdateInterval = 0.2;
   }
 }
 
