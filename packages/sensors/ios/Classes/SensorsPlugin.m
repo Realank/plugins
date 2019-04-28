@@ -40,7 +40,7 @@
 @end
 
 const double GRAVITY = 9.8;
-CMMotionManager* _motionManager;'
+CMMotionManager* _motionManager;
 CMAltimeter * _altimeter;
 
 void _initMotionManager() {
