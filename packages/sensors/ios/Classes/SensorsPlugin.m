@@ -107,7 +107,7 @@ static void sendTriplet(Float64 a1, Float64 a2, Float64 a3,Float64 a4, Float64 a
                                         -acceleration.z * GRAVITY,
                                         attitude.roll,
                                         attitude.pitch,
-                                        attitude.yaw
+                                        attitude.yaw,
                                          eventSink);
                           }];
   return nil;
