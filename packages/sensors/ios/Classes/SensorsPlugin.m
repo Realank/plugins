@@ -4,35 +4,44 @@
 
 #import "SensorsPlugin.h"
 #import <CoreMotion/CoreMotion.h>
+#import <CoreMotion/CMAltimeter.h>
 
 @implementation FLTSensorsPlugin
 
 + (void)registerWithRegistrar:(NSObject<FlutterPluginRegistrar>*)registrar {
+    //acc
   FLTAccelerometerStreamHandler* accelerometerStreamHandler =
       [[FLTAccelerometerStreamHandler alloc] init];
   FlutterEventChannel* accelerometerChannel =
       [FlutterEventChannel eventChannelWithName:@"plugins.flutter.io/sensors/accelerometer"
                                 binaryMessenger:[registrar messenger]];
   [accelerometerChannel setStreamHandler:accelerometerStreamHandler];
-
+    //user acc
   FLTUserAccelStreamHandler* userAccelerometerStreamHandler =
       [[FLTUserAccelStreamHandler alloc] init];
   FlutterEventChannel* userAccelerometerChannel =
       [FlutterEventChannel eventChannelWithName:@"plugins.flutter.io/sensors/user_accel"
                                 binaryMessenger:[registrar messenger]];
   [userAccelerometerChannel setStreamHandler:userAccelerometerStreamHandler];
-
+    //gyro
   FLTGyroscopeStreamHandler* gyroscopeStreamHandler = [[FLTGyroscopeStreamHandler alloc] init];
   FlutterEventChannel* gyroscopeChannel =
       [FlutterEventChannel eventChannelWithName:@"plugins.flutter.io/sensors/gyroscope"
                                 binaryMessenger:[registrar messenger]];
   [gyroscopeChannel setStreamHandler:gyroscopeStreamHandler];
+    //alti
+  FLTAltimeterStreamHandler* altimeterStreamHandler = [[FLTAltimeterStreamHandler alloc] init];
+    FlutterEventChannel* altimeterChannel =
+        [FlutterEventChannel eventChannelWithName:@"plugins.flutter.io/sensors/altimeter"
+                                  binaryMessenger:[registrar messenger]];
+    [altimeterChannel setStreamHandler:altimeterStreamHandler];
 }
 
 @end
 
 const double GRAVITY = 9.8;
-CMMotionManager* _motionManager;
+CMMotionManager* _motionManager;'
+CMAltimeter * _altimeter;
 
 void _initMotionManager() {
   if (!_motionManager) {
@@ -41,6 +50,12 @@ void _initMotionManager() {
     _motionManager.gyroUpdateInterval = 0.2;
     _motionManager.deviceMotionUpdateInterval = 0.2;
   }
+}
+
+void _initAltimeter () {
+    if(!_altimeter) {
+        _altimeter = [[CMAltimeter alloc]init];
+    }
 }
 
 static void sendTriplet(Float64 x, Float64 y, Float64 z, FlutterEventSink sink) {
@@ -115,3 +130,23 @@ static void sendTriplet(Float64 x, Float64 y, Float64 z, FlutterEventSink sink) 
 }
 
 @end
+
+@implementation FLTAltimeterStreamHandler
+
+- (FlutterError*)onListenWithArguments:(id)arguments eventSink:(FlutterEventSink)eventSink {
+  _initAltimeter();
+  [_altimeter startRelativeAltitudeUpdatesToQueue:NSOperationQueue.mainQueue withHandler:^(CMAltitudeData * _Nullable altitudeData, NSError * _Nullable error) {
+        float alti = [altitudeData.relativeAltitude floatValue];
+        sendTriplet(alti, 0, 0, eventSink);
+
+      }];
+  return nil;
+}
+
+- (FlutterError*)onCancelWithArguments:(id)arguments {
+  [_altimeter stopRelativeAltitudeUpdates];
+  return nil;
+}
+
+@end
+
