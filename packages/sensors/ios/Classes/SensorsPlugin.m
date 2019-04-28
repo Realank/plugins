@@ -80,7 +80,7 @@ static void sendTriplet(Float64 a1, Float64 a2, Float64 a3,Float64 a4, Float64 a
                              // Multiply by gravity, and adjust sign values to
                              // align with Android.
                              sendTriplet(-acceleration.x * GRAVITY, -acceleration.y * GRAVITY,
-                                         -acceleration.z * GRAVITY, eventSink);
+                                         -acceleration.z * GRAVITY,0,0,0, eventSink);
                            }];
   return nil;
 }
@@ -128,7 +128,7 @@ static void sendTriplet(Float64 a1, Float64 a2, Float64 a3,Float64 a4, Float64 a
       startGyroUpdatesToQueue:[[NSOperationQueue alloc] init]
                   withHandler:^(CMGyroData* gyroData, NSError* error) {
                     CMRotationRate rotationRate = gyroData.rotationRate;
-                    sendTriplet(rotationRate.x, rotationRate.y, rotationRate.z, eventSink);
+                    sendTriplet(rotationRate.x, rotationRate.y, rotationRate.z,0,0,0, eventSink);
                   }];
   return nil;
 }
@@ -146,7 +146,7 @@ static void sendTriplet(Float64 a1, Float64 a2, Float64 a3,Float64 a4, Float64 a
   _initAltimeter();
   [_altimeter startRelativeAltitudeUpdatesToQueue:NSOperationQueue.mainQueue withHandler:^(CMAltitudeData * _Nullable altitudeData, NSError * _Nullable error) {
         float alti = [altitudeData.relativeAltitude floatValue];
-        sendTriplet(alti, 0, 0, eventSink);
+        sendTriplet(alti, 0, 0,0,0,0, eventSink);
 
       }];
   return nil;
