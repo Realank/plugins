@@ -28,7 +28,7 @@ class AccelerometerEvent {
 }
 
 class UserAccelerometerEvent {
-  UserAccelerometerEvent(this.x, this.y, this.z);
+  UserAccelerometerEvent(this.x, this.y, this.z, this.roll, this.pitch, this.yaw);
 
   /// Acceleration force along the x axis (excluding gravity) measured in m/s^2.
   final double x;
@@ -38,6 +38,10 @@ class UserAccelerometerEvent {
 
   /// Acceleration force along the z axis (excluding gravity) measured in m/s^2.
   final double z;
+
+  final double roll;
+  final double pitch;
+  final double yaw;
 
   @override
   String toString() => '[UserAccelerometerEvent (x: $x, y: $y, z: $z)]';
@@ -74,7 +78,11 @@ AccelerometerEvent _listToAccelerometerEvent(List<double> list) {
 }
 
 UserAccelerometerEvent _listToUserAccelerometerEvent(List<double> list) {
-  return UserAccelerometerEvent(list[0], list[1], list[2]);
+  if (list.length >= 6) {
+    return UserAccelerometerEvent(list[0], list[1], list[2], list[3], list[4], list[5]);
+  } else {
+    return UserAccelerometerEvent(list[0], list[1], list[2], 0, 0, 0);
+  }
 }
 
 GyroscopeEvent _listToGyroscopeEvent(List<double> list) {

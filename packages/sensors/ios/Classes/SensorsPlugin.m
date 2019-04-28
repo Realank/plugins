@@ -58,11 +58,14 @@ void _initAltimeter () {
     }
 }
 
-static void sendTriplet(Float64 x, Float64 y, Float64 z, FlutterEventSink sink) {
-  NSMutableData* event = [NSMutableData dataWithCapacity:3 * sizeof(Float64)];
-  [event appendBytes:&x length:sizeof(Float64)];
-  [event appendBytes:&y length:sizeof(Float64)];
-  [event appendBytes:&z length:sizeof(Float64)];
+static void sendTriplet(Float64 a1, Float64 a2, Float64 a3,Float64 a4, Float64 a5, Float64 a6, FlutterEventSink sink) {
+  NSMutableData* event = [NSMutableData dataWithCapacity:6 * sizeof(Float64)];
+  [event appendBytes:&a1 length:sizeof(Float64)];
+  [event appendBytes:&a2 length:sizeof(Float64)];
+  [event appendBytes:&a3 length:sizeof(Float64)];
+  [event appendBytes:&a4 length:sizeof(Float64)];
+  [event appendBytes:&a5 length:sizeof(Float64)];
+  [event appendBytes:&a6 length:sizeof(Float64)];
   sink([FlutterStandardTypedData typedDataWithFloat64:event]);
 }
 
@@ -97,9 +100,15 @@ static void sendTriplet(Float64 x, Float64 y, Float64 z, FlutterEventSink sink) 
       startDeviceMotionUpdatesToQueue:[[NSOperationQueue alloc] init]
                           withHandler:^(CMDeviceMotion* data, NSError* error) {
                             CMAcceleration acceleration = data.userAcceleration;
+                            CMAttitude *attitude = data.attitude;
                             // Multiply by gravity, and adjust sign values to align with Android.
-                            sendTriplet(-acceleration.x * GRAVITY, -acceleration.y * GRAVITY,
-                                        -acceleration.z * GRAVITY, eventSink);
+                            sendTriplet(-acceleration.x * GRAVITY,
+                                        -acceleration.y * GRAVITY,
+                                        -acceleration.z * GRAVITY,
+                                        attitude.roll,
+                                        attitude.pitch,
+                                        attitude.yaw
+                                         eventSink);
                           }];
   return nil;
 }
