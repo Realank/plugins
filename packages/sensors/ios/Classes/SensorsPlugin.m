@@ -97,7 +97,7 @@ static void sendTriplet(Float64 a1, Float64 a2, Float64 a3,Float64 a4, Float64 a
 - (FlutterError*)onListenWithArguments:(id)arguments eventSink:(FlutterEventSink)eventSink {
   _initMotionManager();
   [_motionManager
-      startDeviceMotionUpdatesToQueue:[[NSOperationQueue alloc] init]
+      startDeviceMotionUpdatesUsingReferenceFrame:CMAttitudeReferenceFrameXTrueNorthZVertical toQueue:[[NSOperationQueue alloc] init]
                           withHandler:^(CMDeviceMotion* data, NSError* error) {
                             CMAcceleration acceleration = data.userAcceleration;
                             CMAttitude *attitude = data.attitude;
