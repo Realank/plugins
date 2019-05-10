@@ -11,6 +11,8 @@ const EventChannel _gyroscopeEventChannel = EventChannel('plugins.flutter.io/sen
 
 const EventChannel _altimeterEventChannel = EventChannel('plugins.flutter.io/sensors/altimeter');
 
+const EventChannel _dcmEventChannel = EventChannel('plugins.flutter.io/sensors/dcm');
+
 class AccelerometerEvent {
   AccelerometerEvent(this.x, this.y, this.z);
 
@@ -73,6 +75,24 @@ class AltimeterEvent {
   String toString() => '[AltimeterEvent (height: $height)]';
 }
 
+class DCMEvent {
+  DCMEvent(
+      this.m11, this.m12, this.m13, this.m21, this.m22, this.m23, this.m31, this.m32, this.m33);
+
+  final double m11;
+  final double m12;
+  final double m13;
+  final double m21;
+  final double m22;
+  final double m23;
+  final double m31;
+  final double m32;
+  final double m33;
+
+  @override
+  String toString() => '[DCMEvent \n[$m11,$m12,$m13]\n[$m21,$m22,$m23]\n[$m31,$m32,$m33]\n]';
+}
+
 AccelerometerEvent _listToAccelerometerEvent(List<double> list) {
   return AccelerometerEvent(list[0], list[1], list[2]);
 }
@@ -93,10 +113,15 @@ AltimeterEvent _listToAltimeterEvent(List<double> list) {
   return AltimeterEvent(list[0]);
 }
 
+DCMEvent _listToDCMEvent(List<double> list) {
+  return DCMEvent(list[0], list[1], list[2], list[3], list[4], list[5], list[6], list[7], list[8]);
+}
+
 Stream<AccelerometerEvent> _accelerometerEvents;
 Stream<UserAccelerometerEvent> _userAccelerometerEvents;
 Stream<GyroscopeEvent> _gyroscopeEvents;
 Stream<AltimeterEvent> _altimeterEvents;
+Stream<DCMEvent> _dcmEvents;
 
 /// A broadcast stream of events from the device accelerometer.
 Stream<AccelerometerEvent> get accelerometerEvents {
@@ -136,4 +161,13 @@ Stream<AltimeterEvent> get altimeterEvents {
         .map((dynamic event) => _listToAltimeterEvent(event.cast<double>()));
   }
   return _altimeterEvents;
+}
+
+Stream<DCMEvent> get dcmEvents {
+  if (_dcmEvents == null) {
+    _dcmEvents = _dcmEventChannel
+        .receiveBroadcastStream()
+        .map((dynamic event) => _listToDCMEvent(event.cast<double>()));
+  }
+  return _dcmEvents;
 }

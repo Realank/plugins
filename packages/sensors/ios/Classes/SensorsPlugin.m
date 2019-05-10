@@ -23,6 +23,13 @@
       [FlutterEventChannel eventChannelWithName:@"plugins.flutter.io/sensors/user_accel"
                                 binaryMessenger:[registrar messenger]];
   [userAccelerometerChannel setStreamHandler:userAccelerometerStreamHandler];
+  //DCM rotation matrix
+  FLTDCMStreamHandler* dcmStreamHandler =
+        [[FLTDCMStreamHandler alloc] init];
+    FlutterEventChannel* dcmChannel =
+        [FlutterEventChannel eventChannelWithName:@"plugins.flutter.io/sensors/dcm"
+                                  binaryMessenger:[registrar messenger]];
+    [dcmChannel setStreamHandler:dcmStreamHandler];
     //gyro
   FLTGyroscopeStreamHandler* gyroscopeStreamHandler = [[FLTGyroscopeStreamHandler alloc] init];
   FlutterEventChannel* gyroscopeChannel =
@@ -58,14 +65,17 @@ void _initAltimeter () {
     }
 }
 
-static void sendTriplet(Float64 a1, Float64 a2, Float64 a3,Float64 a4, Float64 a5, Float64 a6, FlutterEventSink sink) {
-  NSMutableData* event = [NSMutableData dataWithCapacity:6 * sizeof(Float64)];
+static void sendTriplet(Float64 a1, Float64 a2, Float64 a3,Float64 a4, Float64 a5, Float64 a6,Float64 a7, Float64 a8, Float64 a9, FlutterEventSink sink) {
+  NSMutableData* event = [NSMutableData dataWithCapacity:9 * sizeof(Float64)];
   [event appendBytes:&a1 length:sizeof(Float64)];
   [event appendBytes:&a2 length:sizeof(Float64)];
   [event appendBytes:&a3 length:sizeof(Float64)];
   [event appendBytes:&a4 length:sizeof(Float64)];
   [event appendBytes:&a5 length:sizeof(Float64)];
   [event appendBytes:&a6 length:sizeof(Float64)];
+  [event appendBytes:&a7 length:sizeof(Float64)];
+  [event appendBytes:&a8 length:sizeof(Float64)];
+  [event appendBytes:&a9 length:sizeof(Float64)];
   sink([FlutterStandardTypedData typedDataWithFloat64:event]);
 }
 
@@ -80,7 +90,7 @@ static void sendTriplet(Float64 a1, Float64 a2, Float64 a3,Float64 a4, Float64 a
                              // Multiply by gravity, and adjust sign values to
                              // align with Android.
                              sendTriplet(-acceleration.x * GRAVITY, -acceleration.y * GRAVITY,
-                                         -acceleration.z * GRAVITY,0,0,0, eventSink);
+                                         -acceleration.z * GRAVITY,0,0,0,0,0,0, eventSink);
                            }];
   return nil;
 }
@@ -108,6 +118,7 @@ static void sendTriplet(Float64 a1, Float64 a2, Float64 a3,Float64 a4, Float64 a
                                         attitude.roll,
                                         attitude.pitch,
                                         attitude.yaw,
+                                        0,0,0,
                                          eventSink);
                           }];
   return nil;
@@ -120,6 +131,37 @@ static void sendTriplet(Float64 a1, Float64 a2, Float64 a3,Float64 a4, Float64 a
 
 @end
 
+@implementation FLTDCMStreamHandler
+
+- (FlutterError*)onListenWithArguments:(id)arguments eventSink:(FlutterEventSink)eventSink {
+  _initMotionManager();
+  [_motionManager
+      startDeviceMotionUpdatesUsingReferenceFrame:CMAttitudeReferenceFrameXTrueNorthZVertical toQueue:[[NSOperationQueue alloc] init]
+                          withHandler:^(CMDeviceMotion* data, NSError* error) {
+                            CMRotationMatrix matrix = data.attitude.rotationMatrix;
+                            // Multiply by gravity, and adjust sign values to align with Android.
+                            sendTriplet(matrix.m11,
+                                        matrix.m12,
+                                        matrix.m13,
+                                        matrix.m21,
+                                        matrix.m22,
+                                        matrix.m23,
+                                        matrix.m31,
+                                        matrix.m32,
+                                        matrix.m33,
+                                        eventSink);
+                          }];
+  return nil;
+}
+
+- (FlutterError*)onCancelWithArguments:(id)arguments {
+  [_motionManager stopDeviceMotionUpdates];
+  return nil;
+}
+
+@end
+
+
 @implementation FLTGyroscopeStreamHandler
 
 - (FlutterError*)onListenWithArguments:(id)arguments eventSink:(FlutterEventSink)eventSink {
@@ -128,7 +170,7 @@ static void sendTriplet(Float64 a1, Float64 a2, Float64 a3,Float64 a4, Float64 a
       startGyroUpdatesToQueue:[[NSOperationQueue alloc] init]
                   withHandler:^(CMGyroData* gyroData, NSError* error) {
                     CMRotationRate rotationRate = gyroData.rotationRate;
-                    sendTriplet(rotationRate.x, rotationRate.y, rotationRate.z,0,0,0, eventSink);
+                    sendTriplet(rotationRate.x, rotationRate.y, rotationRate.z,0,0,0,0,0,0, eventSink);
                   }];
   return nil;
 }
@@ -146,7 +188,7 @@ static void sendTriplet(Float64 a1, Float64 a2, Float64 a3,Float64 a4, Float64 a
   _initAltimeter();
   [_altimeter startRelativeAltitudeUpdatesToQueue:NSOperationQueue.mainQueue withHandler:^(CMAltitudeData * _Nullable altitudeData, NSError * _Nullable error) {
         float alti = [altitudeData.relativeAltitude floatValue];
-        sendTriplet(alti, 0, 0,0,0,0, eventSink);
+        sendTriplet(alti, 0, 0,0,0,0,0,0,0, eventSink);
 
       }];
   return nil;

@@ -13,6 +13,9 @@
 @interface FLTAccelerometerStreamHandler : NSObject <FlutterStreamHandler>
 @end
 
+@interface FLTDCMStreamHandler : NSObject <FlutterStreamHandler>
+@end
+
 @interface FLTGyroscopeStreamHandler : NSObject <FlutterStreamHandler>
 @end
 
