@@ -42,8 +42,7 @@ class _MyHomePageState extends State<MyHomePage> {
   List<double> _accelerometerValues;
   List<double> _userAccelerometerValues;
   List<double> _gyroscopeValues;
-  List<StreamSubscription<dynamic>> _streamSubscriptions =
-      <StreamSubscription<dynamic>>[];
+  List<StreamSubscription<dynamic>> _streamSubscriptions = <StreamSubscription<dynamic>>[];
 
   @override
   Widget build(BuildContext context) {
@@ -51,9 +50,8 @@ class _MyHomePageState extends State<MyHomePage> {
         _accelerometerValues?.map((double v) => v.toStringAsFixed(1))?.toList();
     final List<String> gyroscope =
         _gyroscopeValues?.map((double v) => v.toStringAsFixed(1))?.toList();
-    final List<String> userAccelerometer = _userAccelerometerValues
-        ?.map((double v) => v.toStringAsFixed(1))
-        ?.toList();
+    final List<String> userAccelerometer =
+        _userAccelerometerValues?.map((double v) => v.toStringAsFixed(1))?.toList();
 
     return Scaffold(
       appBar: AppBar(
@@ -121,8 +119,7 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     super.initState();
-    _streamSubscriptions
-        .add(accelerometerEvents.listen((AccelerometerEvent event) {
+    _streamSubscriptions.add(accelerometerEvents.listen((AccelerometerEvent event) {
       setState(() {
         _accelerometerValues = <double>[event.x, event.y, event.z];
       });
@@ -132,8 +129,7 @@ class _MyHomePageState extends State<MyHomePage> {
         _gyroscopeValues = <double>[event.x, event.y, event.z];
       });
     }));
-    _streamSubscriptions
-        .add(userAccelerometerEvents.listen((UserAccelerometerEvent event) {
+    _streamSubscriptions.add(userAccelerometerEvents.listen((UserAccelerometerEvent event) {
       setState(() {
         _userAccelerometerValues = <double>[event.x, event.y, event.z];
       });
